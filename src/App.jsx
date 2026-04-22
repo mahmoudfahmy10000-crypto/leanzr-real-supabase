@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import {
@@ -21,20 +20,15 @@ import {
   HardDrive,
   Home,
   KanbanSquare,
-  Layers3,
-  LayoutDashboard,
   LineChart,
   Lock,
   PieChart,
   Plus,
   RefreshCcw,
   Rocket,
-  Search,
   Settings2,
   ShieldCheck,
   Target,
-  TimerReset,
-  UserPlus,
   Users,
   Wand2,
   Workflow,
@@ -86,6 +80,153 @@ const TOOL_LIBRARY = [
   { key: "ctq", name: "CTQ Tree Builder", category: "Lean Six Sigma", icon: Target, description: "Translate VOC into measurable CTQs." },
   { key: "pilot", name: "Pilot Run Tracker", category: "Lean Six Sigma", icon: Rocket, description: "Validate changes before full rollout and handover." },
 ];
+
+const TOOL_DETAIL_DATA = {
+  oee: {
+    metrics: [
+      { title: "Availability", value: "92.4%", note: "planned vs running time", icon: Gauge },
+      { title: "Performance", value: "88.1%", note: "actual vs ideal cycle", icon: BarChart3 },
+      { title: "Quality", value: "97.2%", note: "good parts ratio", icon: CheckCircle2 },
+      { title: "OEE", value: "79.1%", note: "combined equipment effectiveness", icon: Target },
+    ],
+    tips: ["Review top loss buckets by shift.", "Link chronic losses to actions and owners.", "Use OEE trend before weekly review."],
+  },
+  downtime: {
+    metrics: [
+      { title: "Events", value: "17", note: "today so far", icon: AlertTriangle },
+      { title: "Minutes", value: "96", note: "lost time", icon: BarChart3 },
+      { title: "Top line", value: "Line 2", note: "largest downtime contribution", icon: Factory },
+      { title: "Recurrence", value: "High", note: "same issue repeated", icon: RefreshCcw },
+    ],
+    tips: ["Escalate top repeated stoppages.", "Separate planned and unplanned loss.", "Tie each event to root cause and owner."],
+  },
+  pareto: {
+    metrics: [
+      { title: "Top defect", value: "Paint Scratch", note: "largest quality driver", icon: PieChart },
+      { title: "Defect families", value: "8", note: "active grouped defects", icon: FileBarChart },
+      { title: "80% causes", value: "3", note: "main focus area", icon: Target },
+      { title: "Trend", value: "Improving", note: "last 7 days", icon: CheckCircle2 },
+    ],
+    tips: ["Focus first on the first 3 bars.", "Check if customer complaints match the same trend.", "Use with 5 Whys or FMEA."],
+  },
+  controlplan: {
+    metrics: [
+      { title: "CTQs", value: "12", note: "critical characteristics", icon: ClipboardList },
+      { title: "Reaction plans", value: "9", note: "defined responses", icon: ShieldCheck },
+      { title: "Sampling", value: "100%", note: "for critical points", icon: Target },
+      { title: "Owners", value: "6", note: "responsible functions", icon: Users },
+    ],
+    tips: ["Verify reaction plan ownership.", "Align checkpoints with actual defect escapes.", "Link CTQs to work instructions."],
+  },
+  fmea: {
+    metrics: [
+      { title: "High RPN", value: "4", note: "risk items need action", icon: AlertTriangle },
+      { title: "Closed actions", value: "11", note: "mitigations completed", icon: CheckCircle2 },
+      { title: "Open actions", value: "5", note: "still pending", icon: ClipboardList },
+      { title: "Review cycle", value: "Weekly", note: "update discipline", icon: RefreshCcw },
+    ],
+    tips: ["Close the highest risk items first.", "Reduce occurrence before detection if possible.", "Re-score after action completion."],
+  },
+  pm: {
+    metrics: [
+      { title: "PM compliance", value: "89%", note: "this month", icon: RefreshCcw },
+      { title: "Overdue tasks", value: "7", note: "need scheduling", icon: AlertTriangle },
+      { title: "Critical assets", value: "14", note: "high business impact", icon: Wrench },
+      { title: "Readiness", value: "Good", note: "spares available", icon: CheckCircle2 },
+    ],
+    tips: ["Close overdue PM first.", "Protect critical asset schedule.", "Tie PM results to MTBF changes."],
+  },
+  mtbf: {
+    metrics: [
+      { title: "MTBF", value: "126 h", note: "critical asset group", icon: LineChart },
+      { title: "MTTR", value: "38 min", note: "average restore time", icon: Wrench },
+      { title: "Chronic failures", value: "3", note: "repeat breakdowns", icon: AlertTriangle },
+      { title: "Trend", value: "Stable", note: "last 30 days", icon: CheckCircle2 },
+    ],
+    tips: ["Separate chronic from random failures.", "Compare MTTR by team or shift.", "Use reliability trend in maintenance reviews."],
+  },
+  inventory: {
+    metrics: [
+      { title: "WIP", value: "1,240 pcs", note: "current factory flow", icon: HardDrive },
+      { title: "Excess bins", value: "6", note: "above target", icon: AlertTriangle },
+      { title: "Shortage zones", value: "2", note: "need urgent recovery", icon: ClipboardList },
+      { title: "Accuracy", value: "96%", note: "stock visibility", icon: CheckCircle2 },
+    ],
+    tips: ["Compare WIP by line and bottleneck.", "Watch shortage and excess together.", "Use with shortage board and dispatch."],
+  },
+  shortage: {
+    metrics: [
+      { title: "Shortages", value: "12", note: "open missing parts", icon: AlertTriangle },
+      { title: "High-risk orders", value: "4", note: "customer impact", icon: FileBarChart },
+      { title: "Recovered", value: "5", note: "resolved today", icon: CheckCircle2 },
+      { title: "Top supplier", value: "Supplier A", note: "largest gap source", icon: Users },
+    ],
+    tips: ["Escalate the top blocked orders.", "Link each shortage to ETA and owner.", "Review supplier recurrence weekly."],
+  },
+  doccontrol: {
+    metrics: [
+      { title: "Released docs", value: "124", note: "current effective docs", icon: FileText },
+      { title: "Pending approval", value: "7", note: "awaiting release", icon: ClipboardList },
+      { title: "Late revisions", value: "3", note: "need faster closure", icon: AlertTriangle },
+      { title: "Coverage", value: "94%", note: "documented process areas", icon: CheckCircle2 },
+    ],
+    tips: ["Retire obsolete versions quickly.", "Link release to training completion.", "Audit high-risk instructions first."],
+  },
+  change: {
+    metrics: [
+      { title: "Open changes", value: "11", note: "active ECR/ECO items", icon: GitBranch },
+      { title: "Critical", value: "3", note: "high business risk", icon: AlertTriangle },
+      { title: "Implemented", value: "5", note: "released to operation", icon: CheckCircle2 },
+      { title: "Pending signoff", value: "2", note: "awaiting approval", icon: ClipboardList },
+    ],
+    tips: ["Check affected items and routing impact.", "Control release timing carefully.", "Verify document updates before close."],
+  },
+  incident: {
+    metrics: [
+      { title: "Incidents", value: "6", note: "open investigations", icon: Lock },
+      { title: "Near misses", value: "11", note: "this month", icon: AlertTriangle },
+      { title: "Closed actions", value: "9", note: "finished follow-up", icon: CheckCircle2 },
+      { title: "Open CAPAs", value: "4", note: "need closure", icon: ClipboardList },
+    ],
+    tips: ["Investigate repeat incident types.", "Track action effectiveness, not only closure.", "Review trends monthly with leadership."],
+  },
+  dmaic: {
+    metrics: [
+      { title: "Active DMAIC", value: "6", note: "in progress", icon: Wand2 },
+      { title: "Define phase", value: "2", note: "early stage", icon: Target },
+      { title: "Improve phase", value: "2", note: "solution testing", icon: Rocket },
+      { title: "Control phase", value: "1", note: "handover ready", icon: CheckCircle2 },
+    ],
+    tips: ["Use SIPOC and CTQ in Define.", "Validate causes before Improve.", "Lock sustainment in Control."],
+  },
+  sipoc: {
+    metrics: [
+      { title: "Suppliers", value: "7", note: "input sources", icon: Workflow },
+      { title: "Inputs", value: "12", note: "critical entries", icon: ClipboardList },
+      { title: "Outputs", value: "9", note: "main deliverables", icon: FileText },
+      { title: "Customers", value: "5", note: "internal/external", icon: Users },
+    ],
+    tips: ["Keep process at high level.", "Use SIPOC before detailed mapping.", "Confirm outputs and customers clearly."],
+  },
+  ctq: {
+    metrics: [
+      { title: "VOC items", value: "10", note: "customer needs", icon: Users },
+      { title: "Drivers", value: "18", note: "main quality drivers", icon: Target },
+      { title: "CTQs", value: "12", note: "measurable outcomes", icon: ClipboardList },
+      { title: "Specs", value: "8", note: "current quantified limits", icon: CheckCircle2 },
+    ],
+    tips: ["Turn vague needs into measures.", "Link CTQs to control plan.", "Use with VOC and customer complaints."],
+  },
+  pilot: {
+    metrics: [
+      { title: "Pilot runs", value: "4", note: "recent validation cycles", icon: Rocket },
+      { title: "Passed", value: "3", note: "met acceptance criteria", icon: CheckCircle2 },
+      { title: "Blocked", value: "1", note: "needs rework", icon: AlertTriangle },
+      { title: "Readiness", value: "75%", note: "toward rollout", icon: Target },
+    ],
+    tips: ["Define success before the run.", "Capture lessons learned immediately.", "Use pilot output to support release."],
+  },
+};
 
 const DEPARTMENT_CENTERS = {
   production: {
@@ -314,7 +455,7 @@ function Overview({ projects }) {
   );
 }
 
-function ToolLibrary() {
+function ToolLibrary({ onOpenTool }) {
   const [query, setQuery] = useState("");
   const tools = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -339,16 +480,92 @@ function ToolLibrary() {
         {tools.map((tool) => {
           const Icon = tool.icon;
           return (
-            <Card key={tool.key}>
-              <div className="between">
-                <Badge>{tool.category}</Badge>
-                <Icon size={18} />
-              </div>
-              <div style={{ marginTop: 14, fontWeight: 800, fontSize: 20 }}>{tool.name}</div>
-              <div className="subtitle" style={{ marginTop: 8 }}>{tool.description}</div>
+            <Card key={tool.key} style={{ cursor: "pointer" }}>
+              <button
+                style={{ width: "100%", background: "transparent", border: "none", padding: 0, color: "inherit", textAlign: "left", cursor: "pointer" }}
+                onClick={() => onOpenTool(tool)}
+              >
+                <div className="between">
+                  <Badge>{tool.category}</Badge>
+                  <Icon size={18} />
+                </div>
+                <div style={{ marginTop: 14, fontWeight: 800, fontSize: 20 }}>{tool.name}</div>
+                <div className="subtitle" style={{ marginTop: 8 }}>{tool.description}</div>
+                <div className="subtitle" style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  Open tool <ChevronRight size={15} />
+                </div>
+              </button>
             </Card>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function ToolDetail({ tool, onBack }) {
+  const Icon = tool.icon;
+  const detail = TOOL_DETAIL_DATA[tool.key] || {
+    metrics: [
+      { title: "Status", value: "Live", note: "tool workspace active", icon: CheckCircle2 },
+      { title: "Owner", value: "Leanzr", note: "workspace ready", icon: Users },
+      { title: "Usage", value: "Open", note: "review and operate", icon: Hammer },
+      { title: "Category", value: tool.category, note: "mapped tool family", icon: Target },
+    ],
+    tips: ["Use this tool in the relevant department center.", "Link outputs to your project records.", "Review trends before weekly meetings."],
+  };
+
+  return (
+    <div style={{ display: "grid", gap: 20 }}>
+      <button className="btn secondary" style={{ width: 180 }} onClick={onBack}>
+        <ArrowLeft size={16} />&nbsp;Back to tools
+      </button>
+
+      <Card>
+        <div className="between">
+          <div>
+            <div className="title">{tool.name}</div>
+            <div className="subtitle" style={{ marginTop: 8 }}>{tool.description}</div>
+          </div>
+          <div className="row">
+            <Badge>{tool.category}</Badge>
+            <Icon size={20} />
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid-4">
+        {detail.metrics.map((metric) => (
+          <StatCard
+            key={metric.title}
+            title={metric.title}
+            value={metric.value}
+            note={metric.note}
+            icon={metric.icon}
+          />
+        ))}
+      </div>
+
+      <div className="grid-2">
+        <Card>
+          <div style={{ fontWeight: 800, fontSize: 20 }}>Tool workspace</div>
+          <div className="subtitle" style={{ marginTop: 12 }}>
+            This page is now connected and opens correctly from Tool Library, Department Centers, and linked project tools.
+          </div>
+          <div style={{ marginTop: 16, display: "grid", gap: 10 }}>
+            <div className="card-tight">Tool: {tool.name}</div>
+            <div className="card-tight">Category: {tool.category}</div>
+            <div className="card-tight">Mode: Interactive detail page</div>
+          </div>
+        </Card>
+        <Card>
+          <div style={{ fontWeight: 800, fontSize: 20 }}>Recommended next steps</div>
+          <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+            {detail.tips.map((tip) => (
+              <div key={tip} className="card-tight">{tip}</div>
+            ))}
+          </div>
+        </Card>
       </div>
     </div>
   );
@@ -482,12 +699,15 @@ function ProjectsView({ projects, onOpenProject, onOpenWizard, onExport }) {
   );
 }
 
-function ProjectDetail({ project, outputs, onBack, onAddOutput }) {
+function ProjectDetail({ project, outputs, onBack, onAddOutput, onOpenTool }) {
   const [tab, setTab] = useState("Summary");
   const [title, setTitle] = useState("");
   const [toolName, setToolName] = useState("");
   const [outputType, setOutputType] = useState("Analysis");
   const [content, setContent] = useState("");
+  const linkedTools = (project.linked_tools || [])
+    .map((name) => TOOL_LIBRARY.find((tool) => tool.name === name))
+    .filter(Boolean);
 
   return (
     <div style={{ display: "grid", gap: 20 }}>
@@ -527,8 +747,16 @@ function ProjectDetail({ project, outputs, onBack, onAddOutput }) {
           <Card>
             <div style={{ fontWeight: 800, fontSize: 20 }}>Linked tools</div>
             <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
-              {(project.linked_tools || []).length ? (project.linked_tools || []).map((tool) => (
-                <div className="card-tight" key={tool}>{tool}</div>
+              {linkedTools.length ? linkedTools.map((tool) => (
+                <button
+                  className="btn secondary"
+                  style={{ textAlign: "left", justifyContent: "space-between", display: "flex" }}
+                  key={tool.key}
+                  onClick={() => onOpenTool(tool)}
+                >
+                  <span>{tool.name}</span>
+                  <ChevronRight size={16} />
+                </button>
               )) : <div className="empty">No linked tools yet.</div>}
             </div>
           </Card>
@@ -610,7 +838,7 @@ function ProjectDetail({ project, outputs, onBack, onAddOutput }) {
   );
 }
 
-function DepartmentCenter({ centerKey }) {
+function DepartmentCenter({ centerKey, onOpenTool }) {
   const center = DEPARTMENT_CENTERS[centerKey];
   if (!center) return null;
   return (
@@ -622,7 +850,17 @@ function DepartmentCenter({ centerKey }) {
           <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
             {center.tools.map((key) => {
               const tool = TOOL_LIBRARY.find((t) => t.key === key);
-              return <div className="card-tight" key={key}>{tool?.name || key}</div>;
+              return (
+                <button
+                  className="btn secondary"
+                  style={{ textAlign: "left", justifyContent: "space-between", display: "flex" }}
+                  key={key}
+                  onClick={() => tool && onOpenTool(tool)}
+                >
+                  <span>{tool?.name || key}</span>
+                  <ChevronRight size={16} />
+                </button>
+              );
             })}
           </div>
         </Card>
@@ -723,6 +961,7 @@ export default function App() {
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedOutputs, setSelectedOutputs] = useState([]);
+  const [selectedTool, setSelectedTool] = useState(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [error, setError] = useState("");
 
@@ -737,6 +976,7 @@ export default function App() {
         setProjects([]);
         setSelectedProject(null);
         setSelectedOutputs([]);
+        setSelectedTool(null);
         return;
       }
       const currentProfile = await getCurrentUserProfile();
@@ -764,6 +1004,7 @@ export default function App() {
       setWizardOpen(false);
       await refreshAuthAndData();
       setSelectedProject(created);
+      setSelectedTool(null);
       const outputs = [];
       for (const tool of payload.linkedTools.slice(0, 2)) {
         const createdOutput = await addProjectOutput(created.id, {
@@ -785,6 +1026,7 @@ export default function App() {
 
   async function openProject(project) {
     setSelectedProject(project);
+    setSelectedTool(null);
     setSection("projects");
     try {
       const outputs = await listProjectOutputs(project.id);
@@ -792,6 +1034,13 @@ export default function App() {
     } catch (err) {
       setError(err.message || "Failed to load project outputs.");
     }
+  }
+
+  function openTool(tool) {
+    if (!tool) return;
+    setSelectedProject(null);
+    setSelectedTool(tool);
+    setSection("tools");
   }
 
   async function handleAddOutput(output) {
@@ -815,6 +1064,10 @@ export default function App() {
   }
 
   function renderContent() {
+    if (selectedTool) {
+      return <ToolDetail tool={selectedTool} onBack={() => setSelectedTool(null)} />;
+    }
+
     if (selectedProject) {
       return (
         <ProjectDetail
@@ -822,6 +1075,7 @@ export default function App() {
           outputs={selectedOutputs}
           onBack={() => setSelectedProject(null)}
           onAddOutput={handleAddOutput}
+          onOpenTool={openTool}
         />
       );
     }
@@ -830,7 +1084,7 @@ export default function App() {
       case "overview":
         return <Overview projects={projects} />;
       case "tools":
-        return <ToolLibrary />;
+        return <ToolLibrary onOpenTool={openTool} />;
       case "projects":
         return (
           <ProjectsView
@@ -848,7 +1102,7 @@ export default function App() {
       case "planning":
       case "ehs":
       case "engops":
-        return <DepartmentCenter centerKey={section} />;
+        return <DepartmentCenter centerKey={section} onOpenTool={openTool} />;
       case "lss":
         return (
           <div style={{ display: "grid", gap: 20 }}>
@@ -868,7 +1122,17 @@ export default function App() {
                   <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
                     {(LSS_PHASE_TOOLS[phase] || []).map((key) => {
                       const tool = TOOL_LIBRARY.find((t) => t.key === key);
-                      return <div className="card-tight" key={key}>{tool?.name || key}</div>;
+                      return (
+                        <button
+                          key={key}
+                          className="btn secondary"
+                          style={{ textAlign: "left", justifyContent: "space-between", display: "flex" }}
+                          onClick={() => tool && openTool(tool)}
+                        >
+                          <span>{tool?.name || key}</span>
+                          <ChevronRight size={16} />
+                        </button>
+                      );
                     })}
                   </div>
                 </Card>
